@@ -1,0 +1,437 @@
+Very good 👍
+Now I will explain the **program line by line**, and also tell you **why we did this and not some other method**.
+
+I will explain in simple student language.
+
+---
+
+# 🔷 1️⃣ Header Files
+
+```
+#include <stdio.h>
+```
+
+👉 Used for `printf()` and `scanf()`
+Without this, input-output will not work.
+
+```
+#include <ctype.h>
+```
+
+👉 Used for `isalnum()` and `isdigit()`
+We use this to check:
+
+* Whether character is operand
+* Whether character is digit
+
+Why not manually check?
+Because `isalnum()` is cleaner and standard.
+
+```
+#include <string.h>
+```
+
+👉 Used for string handling (good practice when working with strings).
+
+---
+
+# 🔷 2️⃣ Define Size
+
+```
+#define MAX 100
+```
+
+👉 Defines maximum size of stack and expressions.
+
+Why define MAX?
+So memory size is fixed and safe.
+
+Why not dynamic memory?
+Because in Data Structures practicals, we usually use **array-based stack**, not dynamic stack.
+
+---
+
+# 🔷 3️⃣ Stack Declaration
+
+```
+char stack[MAX];
+int top = -1;
+```
+
+👉 `stack` is array for storing operators
+👉 `top` keeps track of last element
+
+Why `top = -1`?
+Because stack is empty initially.
+
+If `top = 0`, it would mean one element already exists.
+
+---
+
+# 🔷 4️⃣ Push Function
+
+```
+void push(char x)
+{
+    stack[++top] = x;
+}
+```
+
+👉 `++top` increases top first
+👉 Then element is stored
+
+Why `++top` first?
+Because:
+
+* Initially top = -1
+* After push → top becomes 0
+* Element stored at index 0
+
+Why not `stack[top++]`?
+That would first store at -1 index (wrong).
+
+---
+
+# 🔷 5️⃣ Pop Function
+
+```
+char pop()
+{
+    return stack[top--];
+}
+```
+
+👉 Return element at top
+👉 Then decrease top
+
+Why `top--` after?
+Because we want to return current top first.
+
+---
+
+# 🔷 6️⃣ Peek Function
+
+```
+char peek()
+{
+    return stack[top];
+}
+```
+
+👉 Returns top element
+👉 Does NOT remove it
+
+Why needed?
+Because we must compare precedence without removing operator.
+
+---
+
+# 🔷 7️⃣ Precedence Function
+
+```
+int precedence(char x)
+{
+    if(x == '+' || x == '-')
+        return 1;
+    if(x == '*' || x == '/')
+        return 2;
+    return 0;
+}
+```
+
+👉 Returns priority value
+
+Why numbers?
+Because comparing integers is easier than comparing operators.
+
+Why return 0?
+For brackets or unknown symbols.
+
+---
+
+# 🔷 8️⃣ Infix to Postfix Function
+
+```
+void infixToPostfix(char infix[], char postfix[])
+```
+
+👉 Takes infix input
+👉 Stores result in postfix
+
+Why pass arrays?
+Because strings in C are character arrays.
+
+---
+
+## Variables
+
+```
+int i = 0, j = 0;
+char symbol;
+```
+
+👉 `i` → scans infix
+👉 `j` → builds postfix
+👉 `symbol` → current character
+
+Why separate i and j?
+Because input and output positions are different.
+
+---
+
+## While Loop
+
+```
+while(infix[i] != '\0')
+```
+
+👉 Loop until end of string
+
+Why `'\0'`?
+Because C strings end with null character.
+
+---
+
+## If Operand
+
+```
+if(isalnum(symbol))
+{
+    postfix[j++] = symbol;
+}
+```
+
+👉 Directly add operand to postfix
+
+Why not push operand into stack?
+Because operands do not affect precedence.
+
+---
+
+## If '('
+
+```
+else if(symbol == '(')
+{
+    push(symbol);
+}
+```
+
+👉 Push into stack
+
+Why?
+Because it blocks lower operators until ')' appears.
+
+---
+
+## If ')'
+
+```
+else if(symbol == ')')
+{
+    while(peek() != '(')
+    {
+        postfix[j++] = pop();
+    }
+    pop();
+}
+```
+
+👉 Pop until '(' found
+👉 Remove '('
+
+Why remove '('?
+Because brackets are not part of postfix.
+
+---
+
+## If Operator
+
+```
+else
+{
+    while(top != -1 && precedence(peek()) >= precedence(symbol))
+    {
+        postfix[j++] = pop();
+    }
+    push(symbol);
+}
+```
+
+👉 Compare precedence
+👉 Pop higher or equal operators
+👉 Then push current operator
+
+Why `>=` ?
+Because if equal precedence (like + and -), we follow left-to-right associativity.
+
+Why check `top != -1` ?
+To avoid accessing empty stack.
+
+---
+
+## After Loop Ends
+
+```
+while(top != -1)
+{
+    postfix[j++] = pop();
+}
+```
+
+👉 Pop remaining operators
+
+Why?
+Because expression ended but stack may still have operators.
+
+---
+
+## End Postfix
+
+```
+postfix[j] = '\0';
+```
+
+👉 Add null character to end string
+
+Why?
+Because C strings must end with `'\0'`.
+
+---
+
+# 🔷 9️⃣ Postfix Evaluation
+
+```
+int valStack[MAX];
+int valTop = -1;
+```
+
+👉 New integer stack for numbers
+
+Why separate stack?
+Because:
+
+* First stack stores operators (char)
+* This stack stores numeric values (int)
+
+---
+
+## If Digit
+
+```
+valStack[++valTop] = postfix[i] - '0';
+```
+
+Why subtract '0'?
+Because characters '5' is ASCII value.
+Subtracting '0' converts it to integer 5.
+
+---
+
+## If Operator
+
+```
+int op2 = valStack[valTop--];
+int op1 = valStack[valTop--];
+```
+
+Why pop op2 first?
+Because stack is LIFO.
+Second operand comes first.
+
+Example:
+
+```
+2 3 -
+```
+
+It means:
+
+```
+2 - 3
+```
+
+If reversed, result will be wrong.
+
+---
+
+## Switch Case
+
+Used to perform operation.
+
+Why switch?
+Cleaner than multiple if-else.
+
+---
+
+## Return Final Result
+
+```
+return valStack[valTop];
+```
+
+Final result remains at top of stack.
+
+---
+
+# 🔷 10️⃣ Main Function
+
+```
+scanf("%s", infix);
+```
+
+Why `%s`?
+Because expression is string.
+
+---
+
+```
+infixToPostfix(infix, postfix);
+```
+
+Call conversion function.
+
+---
+
+```
+if(isdigit(postfix[0]))
+```
+
+Why check?
+Because evaluation only works for numeric expressions.
+
+---
+
+# 🔷 Important Design Decisions
+
+| What We Did         | Why Not Other Method              |
+| ------------------- | --------------------------------- |
+| Array stack         | Required in syllabus              |
+| Separate functions  | Clean and modular                 |
+| Precedence function | Avoid repeated code               |
+| Two stacks          | One for operators, one for values |
+| ASCII conversion    | Needed for numeric evaluation     |
+
+---
+
+# 🔷 Time Complexity
+
+* Infix to Postfix → O(n)
+* Postfix Evaluation → O(n)
+
+Because each element is processed once.
+
+---
+
+Now you fully understand:
+
+* What each line does
+* Why it is written
+* Why not another approach
+
+If you want, I can now:
+
+* Draw full memory diagram
+* Explain associativity concept deeply
+* Give tricky viva questions
+* Show common mistakes students make

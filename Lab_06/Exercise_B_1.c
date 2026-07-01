@@ -1,0 +1,72 @@
+#include <stdio.h>
+#define MAX 5
+int q[MAX];
+int front = -1, rear = -1;
+int count=0;
+int insert(int value)
+{
+    if ((front == 0 && rear == MAX - 1) || (front == rear + 1))
+    {
+        printf("Queue Overflow!\n");
+    }
+    if (front == -1)
+    {
+        front = rear = 0;
+    }
+    else
+    {
+        rear = (rear + 1) % MAX;
+    }
+    q[rear] = value;
+    printf("Inserted element is %d\n:", value);
+    count++;
+}
+void delete()
+{
+    if (front == -1)
+    {
+        printf("Queue Underflow!");
+    }
+    printf("Deleted element is %d\n", q[front]);
+    if (front == rear)
+    {
+        front = rear = -1;
+    }
+    else
+    {
+        front = (front + 1) % MAX;
+    }
+    count--;
+}
+
+int main()
+{
+    int choice, value;
+    do
+    {
+        printf("\n1. Insert\n2. Delete\n3. View number of elements in the queue\n4. Exit\n");
+        printf("Enter your choice: ");
+        scanf("%d", &choice);
+
+        switch (choice)
+        {
+        case 1:
+            printf("Enter value: ");
+            scanf("%d", &value);
+            insert(value);
+            break;
+        case 2:
+            delete();
+            break;
+        case 3:
+            printf("The number of elements in the queue are:%d\n",count);
+            break;
+        case 4:
+            printf("Exiting...\n");
+            break;
+        default:
+            printf("Invalid choice\n");
+        }
+    } while (choice != 4);
+    return 0;
+}
